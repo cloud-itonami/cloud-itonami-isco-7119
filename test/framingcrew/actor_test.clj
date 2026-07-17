@@ -44,3 +44,13 @@
     (let [resumed (actor/approve! graph "thread-3")]
       (is (= :done (:status resumed)))
       (is (= 1 (count (store/records-of st "site-1")))))))
+
+(deftest holds-a-named-scope-excluded-op-even-at-high-confidence
+  (testing "a proposal to override the site safety officer's judgment never reaches commit-record!, even via the full graph run and even at maximum advisor confidence"
+    (let [st (fresh-store)
+          graph (actor/build-graph {:store st})
+          request {:op :override-site-safety-officer-judgment :site-id "site-1" :crew-id "crew-1"
+                   :stake :low}
+          result (actor/run-request! graph request {} "thread-4")]
+      (is (= :hold (:disposition (:state result))))
+      (is (empty? (store/records-of st "site-1"))))))

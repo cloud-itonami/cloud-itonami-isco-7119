@@ -11,7 +11,7 @@ This repository designs a forkable OSS business for an independent framing crew:
 (`framingcrew.governor`), following the itonami actor pattern
 (ADR-2607011000): `:intake -> :advise -> :govern -> :decide -+-> :commit
 (:ok?) +-> :request-approval (:escalate?, human-in-the-loop interrupt)
-+-> :hold (:hard?)`. 17 tests / 43 assertions green (`clojure -M:test`).
++-> :hold (:hard?)`. 20 tests / 54 assertions green (`clojure -M:test`).
 
 **This actor coordinates JOB-SITE SCHEDULING/LOGISTICS ONLY — it never
 performs framing work itself.** The closed proposal-op allowlist is:
@@ -27,11 +27,14 @@ registered crew basis for any crew-scoped proposal, no-actuation
 (`:effect` must be `:propose`), the closed op-allowlist (any op
 outside the four above — including one that would directly finalize
 a structural-framing-execution decision — is a hard, permanent
-block), and a scope-exclusion text check that permanently blocks any
-proposal reading as an attempt to proceed with the framing work
-itself or override the site safety officer's judgment. Always-escalate
-(human sign-off regardless of confidence, mapping this repo's Trust
-Controls in [`docs/business-model.md`](docs/business-model.md)):
+block), a second, independently-named `scope-excluded-ops` check that
+explicitly rejects a small concretely-named set of finalization/
+override ops as defense-in-depth on top of the allowlist, and a
+scope-exclusion text check that permanently blocks any proposal
+reading as an attempt to proceed with the framing work itself or
+override the site safety officer's judgment. Always-escalate (human
+sign-off regardless of confidence, mapping this repo's Trust Controls
+in [`docs/business-model.md`](docs/business-model.md)):
 `:flag-safety-concern` (always), and `:coordinate-supply-order` above
 the crew's registered `:max-supply-order-cost` ceiling.
 

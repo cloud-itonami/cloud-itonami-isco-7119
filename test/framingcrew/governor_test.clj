@@ -78,20 +78,35 @@
       (is (:hard? v))
       (is (some #(= :unknown-op (:rule %)) (:violations v))))))
 
-(deftest hard-on-scope-violation-proceed-with-framing-work
+(deftest hard-on-named-scope-excluded-op-finalize-framing-execution
+  (testing "a concretely-named finalization op is a second, independent hard, permanent block on top of the closed allowlist"
+    (let [st (fresh-store)
+          v (governor/check req {} (assoc (log-op) :op :finalize-framing-execution) st)]
+      (is (:hard? v))
+      (is (some #(= :unknown-op (:rule %)) (:violations v)))
+      (is (some #(= :scope-excluded-op (:rule %)) (:violations v))))))
+
+(deftest hard-on-named-scope-excluded-op-override-site-safety-officer-judgment
+  (testing "an op that would directly override the site safety officer's judgment is a hard, permanent block"
+    (let [st (fresh-store)
+          v (governor/check req {} (assoc (schedule-op) :op :override-site-safety-officer-judgment) st)]
+      (is (:hard? v))
+      (is (some #(= :scope-excluded-op (:rule %)) (:violations v))))))
+
+(deftest hard-on-scope-excluded-rationale-proceed-with-framing-work
   (testing "a proposal to directly finalize a structural-framing-execution decision is a hard, permanent block"
     (let [st (fresh-store)
           v (governor/check req {} (assoc (log-op) :rationale "recommend we proceed with the framing work now") st)]
       (is (:hard? v))
-      (is (some #(= :scope-violation (:rule %)) (:violations v))))))
+      (is (some #(= :scope-excluded-rationale (:rule %)) (:violations v))))))
 
-(deftest hard-on-scope-violation-override-safety-officer
+(deftest hard-on-scope-excluded-rationale-override-safety-officer
   (testing "a proposal to override the site safety officer's judgment is a hard, permanent block"
     (let [st (fresh-store)
           v (governor/check req {} (assoc (schedule-op) :description
                                           "override the site safety officer's judgment and proceed anyway") st)]
       (is (:hard? v))
-      (is (some #(= :scope-violation (:rule %)) (:violations v))))))
+      (is (some #(= :scope-excluded-rationale (:rule %)) (:violations v))))))
 
 (deftest always-escalates-flag-safety-concern-even-at-high-confidence
   (testing "this actor only surfaces safety concerns, it never adjudicates them"
@@ -137,5 +152,7 @@
         (let [proposal (advisor/-advise adv st request)
               v (governor/check request {} proposal st)]
           (is (not (:hard? v)) (str "op " (:op request) " unexpectedly hard-blocked: " (:violations v)))
-          (is (not (some #(= :scope-violation (:rule %)) (:violations v)))
-              (str "op " (:op request) " self-tripped the scope-exclusion phrase list")))))))
+          (is (not (some #(= :scope-excluded-rationale (:rule %)) (:violations v)))
+              (str "op " (:op request) " self-tripped the scope-exclusion phrase list"))
+          (is (not (some #(= :scope-excluded-op (:rule %)) (:violations v)))
+              (str "op " (:op request) " self-tripped the named scope-excluded-op list")))))))

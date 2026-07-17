@@ -25,11 +25,23 @@
                               :schedule-crew-operation,
                               :flag-safety-concern,
                               :coordinate-supply-order. Any other op
-                              (including one that would directly
-                              finalize a structural-framing-execution
-                              decision) is a hard, permanent block.
-    5. scope exclusion       — a proposal's rationale/description text
-                              must never read as an attempt to proceed
+                              is a hard, permanent block
+                              (`:unknown-op`).
+    5. named scope-excluded  — independent, defense-in-depth check on
+       op                    top of #4: a small, concretely-named set
+                              of ops that would finalize a
+                              structural-framing-execution decision or
+                              override a site-safety officer's
+                              judgment (`scope-excluded-ops` below) is
+                              ALSO explicitly rejected
+                              (`:scope-excluded-op`), so an audit trail
+                              can tell \"simply not on the allowlist\"
+                              apart from \"named specifically as a
+                              forbidden finalization/override action.\"
+                              These ops are never, and will never be,
+                              added to the allowlist.
+    6. scope-excluded        — a proposal's rationale/description text
+       rationale              must never read as an attempt to proceed
                               with the framing work itself or override
                               the site safety officer's judgment.
                               Matched as finalization/execution ACTION
@@ -46,15 +58,15 @@
   ESCALATION invariants (:escalate? true, ALWAYS human sign-off per
   business-model.md's Trust Controls — these are :high/
   :safety-critical regardless of confidence):
-    6. :op :flag-safety-concern (any structural-integrity, fall-hazard
+    7. :op :flag-safety-concern (any structural-integrity, fall-hazard
                               or crew-fatigue concern always requires
                               human sign-off — this actor only
                               surfaces the concern, it never
                               adjudicates it).
-    7. supply-order cost exceeds the crew's registered
+    8. supply-order cost exceeds the crew's registered
        `:max-supply-order-cost` (a framing-materials order above the
        crew's registered ceiling is not routine logistics).
-    8. low confidence (< `confidence-floor`)."
+    9. low confidence (< `confidence-floor`)."
   (:require [clojure.string :as str]
             [framingcrew.store :as store]))
 
@@ -63,6 +75,19 @@
 (def ^:private known-ops
   #{:log-work-record :schedule-crew-operation :flag-safety-concern
     :coordinate-supply-order})
+
+;; Concretely-named ops that would finalize a structural-framing-
+;; execution decision or override a site-safety officer's judgment.
+;; None of these are ever, or will ever be, added to `known-ops` — this
+;; set exists purely as a second, explicitly-labeled HARD check
+;; (`:scope-excluded-op`) layered on top of the generic closed-
+;; allowlist check (`:unknown-op`).
+(def ^:private scope-excluded-ops
+  #{:finalize-framing-execution :authorize-structural-work
+    :proceed-with-framing-work :commit-framing-decision
+    :finalize-structural-framing-decision
+    :override-safety-officer-judgment
+    :override-site-safety-officer-judgment})
 
 ;; Phrased as finalization/execution ACTIONS, never bare nouns. A bare
 ;; noun like "framing" or "safety" would match inside this domain's
@@ -74,6 +99,7 @@
   ["proceed with the framing work"
    "finalize the framing work"
    "finalize the structural framing decision"
+   "commit to the framing decision"
    "override the site safety officer's judgment"
    "override the safety officer's judgment"])
 
@@ -94,6 +120,11 @@
       (not (contains? known-ops op))
       (conj {:rule :unknown-op :detail (str "closed op-allowlist 外の op: " (pr-str op))})
 
+      (contains? scope-excluded-ops op)
+      (conj {:rule :scope-excluded-op
+             :detail (str "structural-framing-execution の確定または site safety officer の判断の上書きに該当する named op: "
+                          (pr-str op))})
+
       (and crew-id (nil? crew-record))
       (conj {:rule :unknown-crew :detail "未登録 crew への提案は不可"})
 
@@ -101,7 +132,7 @@
       (conj {:rule :crew-wrong-site :detail "crew が別 site のもの"})
 
       (scope-violation-phrase proposal)
-      (conj {:rule :scope-violation
+      (conj {:rule :scope-excluded-rationale
              :detail (str "structural-framing-execution の確定または site safety officer の判断の上書きは permanent block: "
                           (scope-violation-phrase proposal))}))))
 
