@@ -67,7 +67,7 @@
        `:max-supply-order-cost` (a framing-materials order above the
        crew's registered ceiling is not routine logistics).
     9. low confidence (< `confidence-floor`)."
-  (:require [clojure.string :as str]
+  (:require [kotoba.lang.text :as str]
             [framingcrew.store :as store]))
 
 (def confidence-floor 0.6)
@@ -104,7 +104,7 @@
    "override the safety officer's judgment"])
 
 (defn- scope-violation-phrase [proposal]
-  (let [text (str/lower-case (str (:rationale proposal) " " (:description proposal)))]
+  (let [text (str/lower (str (:rationale proposal) " " (:description proposal)))]
     (some (fn [phrase] (when (str/includes? text phrase) phrase)) scope-exclusion-phrases)))
 
 (defn- hard-violations [{:keys [request proposal]} site-record crew-record]
