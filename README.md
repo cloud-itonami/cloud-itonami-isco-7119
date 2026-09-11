@@ -11,7 +11,7 @@ This repository designs a forkable OSS business for an independent framing crew:
 (`framingcrew.governor`), following the itonami actor pattern
 (ADR-2607011000): `:intake -> :advise -> :govern -> :decide -+-> :commit
 (:ok?) +-> :request-approval (:escalate?, human-in-the-loop interrupt)
-+-> :hold (:hard?)`. 20 tests / 54 assertions green (`clojure -M:test`).
++-> :hold (:hard?)`. 20 tests / 54 assertions green (`kbb -M:test`).
 
 **This actor coordinates JOB-SITE SCHEDULING/LOGISTICS ONLY — it never
 performs framing work itself.** The closed proposal-op allowlist is:
