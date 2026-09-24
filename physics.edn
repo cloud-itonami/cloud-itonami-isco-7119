@@ -1,0 +1,34 @@
+;; What this vertical's robot physically does, declared for
+;; kotoba.robotics.process (kotoba-lang/robotics). `kbb -M:physics` runs it.
+;;
+;; README "Robotics premise": a scheduling and materials-logistics robot for
+;; building-frame trades (ISCO 7119) tracks work orders, schedules crews,
+;; stages materials and surfaces safety flags; it never executes structural
+;; framing. Its physical work is materials staging: moving bundles of studs
+;; and joists across the site, including up the access ramp to the slab.
+;;
+;; Every number without a cited source is marked `estimate` in its :basis.
+;; Replacing an estimate with a sourced value is this bot's growth work.
+{:physics/schema "itonami.physical-ai.spec.v1"
+ :repo "cloud-itonami/cloud-itonami-isco-7119"
+ :cases
+ [{:id :stud-bundle-ramp
+   :kind :transport
+   :procedure "staging robot carries a 300 kg bundle of steel studs 30 m up the site access ramp to the framing floor"
+   :params {:mass-kg 180.0 :payload-kg 300.0 :distance-m 30.0 :v-max-mps 1.0 :a-max-mps2 0.4
+            :brake-decel-mps2 0.6 :drive-force-n 900.0 :crr 0.03
+            :cog-height-m 0.50 :support-half-length-m 0.50}
+   :sweep {:param :slope-deg :values [0.0 3.0 6.0 8.0 10.0 12.0]}
+   :quantity :cycle-time-s
+   :limit {:max 60.0 :basis "estimate: one staging leg within a 1-minute slot so the framing crew is not kept waiting"}
+   :boundary {:lo 0.0 :hi 20.0}}
+  {:id :stacked-joist-tipover
+   :kind :transport
+   :procedure "staging robot carries a stacked pack of timber joists 40 m on level slab; the pack height (its centre-of-mass height) is swept"
+   :params {:mass-kg 180.0 :distance-m 40.0 :v-max-mps 1.0 :a-max-mps2 0.6
+            :brake-decel-mps2 1.5 :drive-force-n 900.0 :crr 0.03
+            :cog-height-m 0.50 :support-half-length-m 0.50 :payload-kg 300.0}
+   :sweep {:param :payload-cog-height-m :values [0.8 1.2 1.6 2.0 2.4 2.8]}
+   :quantity :min-tipover-margin
+   :limit {:min 0.5 :basis "estimate: keep half of the static longitudinal stability margin in reserve for uneven slab and dynamic load shift"}
+   :boundary {:lo 0.5 :hi 4.0}}]}
