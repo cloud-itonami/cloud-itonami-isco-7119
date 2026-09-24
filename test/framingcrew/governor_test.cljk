@@ -1,5 +1,5 @@
 (ns framingcrew.governor-test
-  (:require [clojure.test :refer [deftest is testing]]
+  (:require [kotoba.test :refer [deftest is testing]]
             [framingcrew.store :as store]
             [framingcrew.advisor :as advisor]
             [framingcrew.governor :as governor]))
