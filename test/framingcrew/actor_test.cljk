@@ -1,5 +1,5 @@
 (ns framingcrew.actor-test
-  (:require [clojure.test :refer [deftest is testing]]
+  (:require [kotoba.test :refer [deftest is testing]]
             [framingcrew.actor :as actor]
             [framingcrew.store :as store]))
 
