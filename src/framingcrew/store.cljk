@@ -1,7 +1,7 @@
 (ns framingcrew.store
   "SSoT for the ISCO-08 7119 building frame and related trades crew
   scheduling/logistics actor (itonami actor pattern, ADR-2607011000 /
-  CLAUDE.md Actors section; README's 'Robotics premise' — a
+  AGENTS.md Actors section; README's 'Robotics premise' — a
   scheduling and materials-logistics robot performs job-site
   coordination under this advisor/governor pair, which never
   dispatches hardware itself, never finalizes a structural-framing-
